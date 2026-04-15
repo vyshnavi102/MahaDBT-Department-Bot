@@ -449,7 +449,6 @@ REQUIRED JSON SCHEMA
   "insight": ""
 }
 """.strip()
-
     payload = response_db.to_dict(orient="records") if isinstance(response_db, pd.DataFrame) else response_db
     payload = make_json_safe(payload)
 
@@ -466,7 +465,6 @@ REQUIRED JSON SCHEMA
 # DB PIPELINE (FINAL)
 # -------------------------------
 def execute_db_pipeline(user_question: str):
-
     logger = logging.getLogger("qa_api")
     chat_context = get_chat_context()
     print(f"Chat Context---", chat_context)
@@ -491,7 +489,6 @@ the provided SCHEMA and SEMANTIC_CONTEXT.
 COLUMN SELECTION PROCESS  [STRICT — NON-NEGOTIABLE]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 For EVERY column in SEMANTIC_CONTEXT, do the following:
-
   1. Find that column's description in SCHEMA.
   2. Read the description.
   3. Ask: "Does this description directly match what the user is asking for?"
@@ -651,33 +648,6 @@ USER QUESTION:
 
     raise ValueError("Model did not return JSON or SQL")
 
-
-# -------------------------------
-# SQL VALIDATOR
-# -------------------------------
-def validate_sql_query(query: str):
-    if not query:
-        return {"valid": False, "error": "Empty query"}
-
-    q = query.lower()
-
-    # safety
-    if not q.startswith("select"):
-        return {"valid": False, "error": "Only SELECT queries allowed"}
-
-    forbidden = ["drop", "delete", "insert", "update", "alter"]
-    if any(f in q for f in forbidden):
-        return {"valid": False, "error": "Unsafe query detected"}
-
-    try:
-        parsed = sqlparse.parse(query)
-        if not parsed:
-            return {"valid": False, "error": "Invalid SQL syntax"}
-    except Exception:
-        return {"valid": False, "error": "SQL parsing failed"}
-
-    return {"valid": True}
-
 # -------------------------------
 # SQL RETRY FIX
 # -------------------------------
@@ -784,7 +754,8 @@ if __name__ == "__main__":
     db_result = execute_db_pipeline(q)
 
     sql = db_result.get("query", "").replace("`", "")
-    logger.info(f"[DB NODE] QUERY GENERATED: {sql}")
+    logger.info(f"QUERY GENERATED: {sql}")
+    
 
     try:
         rows, error = execute_query(sql)
@@ -793,4 +764,4 @@ if __name__ == "__main__":
         print(f"Rows: {rows}")
 
     except Exception as e:
-        print(f"[DB NODE] Query failed with error: {str(e)}")
+        print(f"Query failed with error: {str(e)}")
